@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 
 const DEMO_ACCOUNTS = [
+  { label: 'Demo Patient (Clean - No Bookings)', email: 'patient.demo@carebridge.local', pass: 'Patient@123', role: 'patient' },
   { label: 'Patient (Anita)', email: 'patient.anita@carebridge.local', pass: 'Patient@123', role: 'patient' },
   { label: 'Doctor (Dr. Sharma - Approved)', email: 'dr.sharma@carebridge.local', pass: 'Doctor@123', role: 'doctor' },
   { label: 'Doctor (Dr. Patel - Pending)', email: 'dr.pending@carebridge.local', pass: 'Doctor@123', role: 'doctor' },

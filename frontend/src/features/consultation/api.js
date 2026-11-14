@@ -13,6 +13,15 @@ export const createDoctorSlotApi = (slotStart, slotEnd) =>
     slot_end: slotEnd,
   });
 
+export const createRecurringSlotsApi = ({ days_of_week, start_time, end_time, slot_duration_minutes, weeks_count }) =>
+  apiClient.post('/appointments/slots/recurring', {
+    days_of_week,
+    start_time,
+    end_time,
+    slot_duration_minutes,
+    weeks_count,
+  });
+
 export const bookAppointmentApi = ({ doctor_id, slot_start, slot_end, reason = '', patient_id = null }) =>
   apiClient.post('/appointments/book', {
     doctor_id,

@@ -10,6 +10,7 @@ from app.modules.appointments.schemas import (
     BookAppointmentRequest,
     BookingResponse,
     CompleteConsultationRequest,
+    CreateRecurringSlotsRequest,
     CreateSlotRequest,
     DoctorSlotResponse,
     QueueItemResponse,
@@ -20,6 +21,7 @@ from app.modules.appointments.service import (
     cancel_booking,
     complete_consultation_call,
     create_doctor_slot,
+    create_recurring_doctor_slots,
     get_live_doctor_queue,
     join_waiting_room,
     list_approved_doctors,
@@ -60,6 +62,15 @@ async def create_slot_endpoint(
 ):
     """Doctor creates an available consultation time slot."""
     return await create_doctor_slot(doctor, data)
+
+
+@router.post("/slots/recurring", response_model=List[DoctorSlotResponse], status_code=status.HTTP_201_CREATED)
+async def create_recurring_slots_endpoint(
+    data: CreateRecurringSlotsRequest,
+    doctor: User = Depends(require_roles(UserRole.DOCTOR))
+):
+    """Doctor defines weekly recurring consulting hours (e.g. Mon-Fri 09:00-13:00 for N weeks)."""
+    return await create_recurring_doctor_slots(doctor, data)
 
 
 @router.get("/slots", response_model=List[DoctorSlotResponse])

@@ -7,7 +7,7 @@ Enforces:
 - Reminders and queue alerts dispatched via MOCK SMS provider.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import logging
 from typing import List, Optional
 from fastapi import HTTPException, status
@@ -17,6 +17,7 @@ from app.modules.appointments.models import Booking, BookingStatus, DoctorSlot
 from app.modules.appointments.schemas import (
     BookAppointmentRequest,
     BookingResponse,
+    CreateRecurringSlotsRequest,
     CreateSlotRequest,
     DoctorSlotResponse,
     QueueItemResponse,
@@ -93,6 +94,76 @@ async def create_doctor_slot(doctor: User, data: CreateSlotRequest) -> DoctorSlo
         slot_end=slot.slot_end,
         is_booked=slot.is_booked,
     )
+
+
+async def create_recurring_doctor_slots(doctor: User, data: CreateRecurringSlotsRequest) -> List[DoctorSlotResponse]:
+    """Doctor sets weekly recurring availability slots for upcoming weeks."""
+    if doctor.role != UserRole.DOCTOR:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only doctors can create slots.")
+
+    if doctor.doctor_status != DoctorStatus.APPROVED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your medical registration is pending approval. You cannot set availability slots yet."
+        )
+
+    try:
+        start_h, start_m = map(int, data.start_time.strip().split(":"))
+        end_h, end_m = map(int, data.end_time.strip().split(":"))
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Time must be in HH:MM 24h format.")
+
+    now = datetime.now(timezone.utc)
+    today = now.date()
+    created_slots = []
+
+    for week_idx in range(data.weeks_count):
+        for day in data.days_of_week:
+            # 0 = Monday ... 6 = Sunday
+            days_ahead = (day - today.weekday() + 7) % 7 + (week_idx * 7)
+            target_date = today + timedelta(days=days_ahead)
+
+            cur_slot_start = datetime(
+                target_date.year, target_date.month, target_date.day,
+                start_h, start_m, tzinfo=timezone.utc
+            )
+            final_end = datetime(
+                target_date.year, target_date.month, target_date.day,
+                end_h, end_m, tzinfo=timezone.utc
+            )
+
+            while cur_slot_start + timedelta(minutes=data.slot_duration_minutes) <= final_end:
+                cur_slot_end = cur_slot_start + timedelta(minutes=data.slot_duration_minutes)
+                if cur_slot_start > now:
+                    exists = await DoctorSlot.find_one(
+                        DoctorSlot.doctor_id == doctor.user_id,
+                        DoctorSlot.slot_start == cur_slot_start
+                    )
+                    if not exists:
+                        slot = DoctorSlot(
+                            doctor_id=doctor.user_id,
+                            doctor_name=doctor.full_name,
+                            specialty=doctor.specialty,
+                            slot_start=cur_slot_start,
+                            slot_end=cur_slot_end,
+                            is_booked=False
+                        )
+                        await slot.insert()
+                        created_slots.append(slot)
+                cur_slot_start = cur_slot_end
+
+    return [
+        DoctorSlotResponse(
+            slot_id=s.slot_id,
+            doctor_id=s.doctor_id,
+            doctor_name=s.doctor_name,
+            specialty=s.specialty,
+            slot_start=s.slot_start,
+            slot_end=s.slot_end,
+            is_booked=s.is_booked,
+        )
+        for s in created_slots
+    ]
 
 
 async def list_available_slots(doctor_id: str) -> List[DoctorSlotResponse]:

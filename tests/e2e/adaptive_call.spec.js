@@ -1,6 +1,20 @@
 import { test, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 
 test.describe('Phase 3: Network-Adaptive Consultation & Reliable Reconnection', () => {
+  test.beforeEach(() => {
+    try {
+      const rootDir = 'C:\\Users\\prana\\OneDrive\\Desktop\\Capstone';
+      const pyExe = `${rootDir}\\backend\\.venv\\Scripts\\python.exe`;
+      execSync(`"${pyExe}" -m app.seed`, {
+        cwd: rootDir,
+        env: { ...process.env, PYTHONPATH: `${rootDir}\\backend;${rootDir}` },
+      });
+    } catch (e) {
+      console.warn('Seed reset warning in beforeEach:', e.message);
+    }
+  });
+
   test('Mode drops to AUDIO_ONLY on 2G throttling/loss and recovers to VIDEO on stable network', async ({ browser }) => {
     test.setTimeout(90000);
 

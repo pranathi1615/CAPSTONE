@@ -1,7 +1,7 @@
 """Pydantic schemas for Doctor Slots, Appointments, and Queue Management."""
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field
 from app.modules.appointments.models import BookingStatus
 
@@ -9,6 +9,14 @@ from app.modules.appointments.models import BookingStatus
 class CreateSlotRequest(BaseModel):
     slot_start: datetime
     slot_end: datetime
+
+
+class CreateRecurringSlotsRequest(BaseModel):
+    days_of_week: List[int] = Field(..., description="0=Monday, 6=Sunday")
+    start_time: str = Field(..., description="HH:MM format e.g. 09:00")
+    end_time: str = Field(..., description="HH:MM format e.g. 13:00")
+    slot_duration_minutes: int = Field(default=30, ge=15, le=120)
+    weeks_count: int = Field(default=2, ge=1, le=8)
 
 
 class DoctorSlotResponse(BaseModel):

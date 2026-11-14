@@ -27,6 +27,7 @@ import { stepModeStateMachine } from './adaptiveCallStateMachine';
 import { VoiceNoteRecorder } from './VoiceNoteRecorder';
 import { VoiceNoteCard } from './VoiceNoteCard';
 import { DevSimulatorPanel } from './DevSimulatorPanel';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import {
   getConsultationMessagesApi,
   completeConsultationApi,
@@ -414,6 +415,10 @@ export const ConsultationRoom = () => {
             >
               RTC: {connectionState}
             </span>
+          </div>
+
+          <div className="border-l border-slate-700 pl-2">
+            <LanguageSwitcher />
           </div>
         </div>
       </header>
