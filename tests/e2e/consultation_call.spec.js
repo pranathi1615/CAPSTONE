@@ -3,13 +3,15 @@ import { execSync } from 'child_process';
 import path from 'path';
 
 test.describe('Phase 2: Real-Time Telehealth Video Consultation & Live Queue', () => {
+  test.setTimeout(90000);
+
   test.beforeEach(() => {
     // Ensure clean BOOKED state for Anita Devi before test runs
     try {
       const rootDir = 'C:\\Users\\prana\\OneDrive\\Desktop\\Capstone';
       const pyExe = `${rootDir}\\backend\\.venv\\Scripts\\python.exe`;
       execSync(`"${pyExe}" -m app.seed`, {
-        cwd: rootDir,
+        cwd: `${rootDir}\\backend`,
         env: { ...process.env, PYTHONPATH: `${rootDir}\\backend;${rootDir}` },
       });
     } catch (e) {

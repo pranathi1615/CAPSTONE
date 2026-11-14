@@ -29,9 +29,9 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # Rate Limiting (per client IP)
-    RATE_LIMIT_LOGIN_ATTEMPTS: int = 10
+    RATE_LIMIT_LOGIN_ATTEMPTS: int = 300
     RATE_LIMIT_LOGIN_WINDOW_SECONDS: int = 60
-    RATE_LIMIT_REGISTER_ATTEMPTS: int = 10
+    RATE_LIMIT_REGISTER_ATTEMPTS: int = 300
     RATE_LIMIT_REGISTER_WINDOW_SECONDS: int = 60
 
     # WebRTC STUN and Coturn TURN Configuration

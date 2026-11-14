@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 
 from app.core.dependencies import get_current_user
+from app.core.vitals_evaluator import evaluate_vitals_data, load_vitals_ranges
 from app.modules.clinical.schemas import (
     ClinicalRecordCreate,
     ClinicalRecordResponse,
@@ -19,6 +20,18 @@ from app.modules.clinical.service import (
 from app.modules.identity.models import User
 
 router = APIRouter(prefix="/clinical/records", tags=["clinical"])
+
+
+@router.get("/ranges/vitals")
+async def get_vitals_ranges_endpoint():
+    """Retrieve sample configurable clinical vitals ranges."""
+    return load_vitals_ranges()
+
+
+@router.post("/evaluate-vitals")
+async def evaluate_vitals_endpoint(payload: dict):
+    """Evaluate raw vitals against sample clinical ranges."""
+    return evaluate_vitals_data(payload)
 
 
 @router.post("", response_model=ClinicalRecordResponse, status_code=status.HTTP_201_CREATED)

@@ -1,0 +1,56 @@
+{
+  "_comment": "CAREBRIDGE CONFIGURABLE CLINICAL VITALS RANGES - NOTICE: Default ranges are sample thresholds requiring clinical validation by a licensed medical practitioner before real-world field deployment.",
+  "blood_pressure": {
+    "systolic": {
+      "unit": "mmHg",
+      "normal_min": 90,
+      "normal_max": 120,
+      "stage1_max": 140,
+      "critical_high": 180,
+      "critical_low": 80
+    },
+    "diastolic": {
+      "unit": "mmHg",
+      "normal_min": 60,
+      "normal_max": 80,
+      "stage1_max": 90,
+      "critical_high": 120,
+      "critical_low": 50
+    }
+  },
+  "blood_sugar": {
+    "unit": "mg/dL",
+    "fasting_normal_min": 70,
+    "fasting_normal_max": 99,
+    "random_normal_max": 140,
+    "high_alert": 180,
+    "low_alert": 70,
+    "critical_high": 250,
+    "critical_low": 54
+  },
+  "spo2": {
+    "unit": "%",
+    "normal_min": 95,
+    "normal_max": 100,
+    "low_alert": 94,
+    "critical_low": 90
+  },
+  "temperature": {
+    "unit": "°C",
+    "normal_min": 36.1,
+    "normal_max": 37.2,
+    "fever": 37.5,
+    "high_fever": 38.5,
+    "critical_high": 40.0,
+    "critical_low": 35.0
+  },
+  "pulse": {
+    "unit": "bpm",
+    "normal_min": 60,
+    "normal_max": 100,
+    "tachycardia": 100,
+    "bradycardia": 60,
+    "critical_high": 140,
+    "critical_low": 45
+  }
+}

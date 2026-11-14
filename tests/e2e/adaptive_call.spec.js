@@ -7,7 +7,7 @@ test.describe('Phase 3: Network-Adaptive Consultation & Reliable Reconnection', 
       const rootDir = 'C:\\Users\\prana\\OneDrive\\Desktop\\Capstone';
       const pyExe = `${rootDir}\\backend\\.venv\\Scripts\\python.exe`;
       execSync(`"${pyExe}" -m app.seed`, {
-        cwd: rootDir,
+        cwd: `${rootDir}\\backend`,
         env: { ...process.env, PYTHONPATH: `${rootDir}\\backend;${rootDir}` },
       });
     } catch (e) {

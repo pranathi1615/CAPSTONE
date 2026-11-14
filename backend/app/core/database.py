@@ -19,6 +19,8 @@ from app.modules.chat.models import ChatMessage, ConsultationModeEvent, VoiceNot
 from app.modules.clinical.models import ClinicalRecord
 from app.modules.prescriptions.models import Prescription
 from app.modules.pharmacies.models import Pharmacy
+from app.modules.sync.models import SyncReceipt
+from app.modules.assisted_visits.models import AssistedVisit
 
 logger = logging.getLogger(__name__)
 
@@ -52,10 +54,17 @@ async def init_db() -> None:
             RoomCounter,
             ClinicalRecord,
             Prescription,
-            Pharmacy
+            Pharmacy,
+            SyncReceipt,
+            AssistedVisit
         ]
     )
     logger.info("MongoDB and Beanie ODM initialized successfully with all indexes.")
+
+
+def get_mongo_client() -> Optional[AsyncIOMotorClient]:
+    """Return active Motor client for session/transaction management."""
+    return mongo_client
 
 
 async def close_db() -> None:

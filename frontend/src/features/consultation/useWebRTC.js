@@ -194,6 +194,14 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
           pc = createPeerConnection(stream);
         }
 
+        // Handle offer collision / glare gracefully
+        if (pc.signalingState !== 'stable') {
+          console.warn('[WebRTC] Handling offer collision in state:', pc.signalingState);
+          await pc.setLocalDescription({ type: 'rollback' }).catch((e) => {
+            console.warn('[WebRTC] Rollback ignored:', e);
+          });
+        }
+
         await pc.setRemoteDescription(new RTCSessionDescription({
           type: 'offer',
           sdp: payload.sdp,
@@ -202,7 +210,7 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
         // Flush any queued ICE candidates received before the offer
         while (iceCandidatesQueue.current.length > 0) {
           const cand = iceCandidatesQueue.current.shift();
-          await pc.addIceCandidate(new RTCIceCandidate(cand));
+          await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {});
         }
 
         const answer = await pc.createAnswer();
@@ -219,7 +227,7 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
     } else if (type === 'signal_answer') {
       try {
         const pc = pcRef.current;
-        if (pc) {
+        if (pc && pc.signalingState === 'have-local-offer') {
           await pc.setRemoteDescription(new RTCSessionDescription({
             type: 'answer',
             sdp: payload.sdp,
@@ -228,8 +236,10 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
           // Flush queued candidates
           while (iceCandidatesQueue.current.length > 0) {
             const cand = iceCandidatesQueue.current.shift();
-            await pc.addIceCandidate(new RTCIceCandidate(cand));
+            await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {});
           }
+        } else if (pc) {
+          console.warn('[WebRTC] Ignoring signal_answer in state:', pc.signalingState);
         }
       } catch (err) {
         console.error('[WebRTC] Failed to handle answer:', err);

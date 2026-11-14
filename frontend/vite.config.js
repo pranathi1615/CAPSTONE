@@ -30,7 +30,28 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
+        navigateFallback: '/index.html',
+        cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) =>
+              request.destination === 'document' ||
+              request.destination === 'script' ||
+              request.destination === 'style',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'carebridge-static-assets',
+            },
+          },
+          {
+            urlPattern: /\.(?:json|woff2?)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'carebridge-locales-and-fonts',
+            },
+          },
+        ],
       }
     })
   ],

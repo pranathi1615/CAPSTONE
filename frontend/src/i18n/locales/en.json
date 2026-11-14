@@ -249,5 +249,41 @@
   "pharmacy_finder": {
     "heading": "Verified Pharmacy Finder",
     "subheading": "MongoDB 2dsphere geo-spatial discovery of licensed dispensaries with live stock."
+  },
+  "lock_screen": {
+    "title": "Device Locked",
+    "subtitle": "Shared-device safety lock active to protect patient clinical privacy.",
+    "lock_device_btn": "Lock Device",
+    "enter_pin_label": "Enter 4-Digit Security PIN",
+    "pin_hint": "Default demonstration PIN: 1234",
+    "unlock_btn": "Unlock Screen",
+    "logout_btn": "Log Out Entirely",
+    "wrong_pin": "Incorrect 4-digit PIN. Default is 1234."
+  },
+  "assisted_visit": {
+    "title": "CHW Assisted-Visit Workflow",
+    "subtitle": "Offline-first visit mode with vitals, regional voice symptoms, and mandatory consent."
+  },
+  "sync_banner": {
+    "online": "Online",
+    "offline": "Offline",
+    "syncing": "Syncing Mutations...",
+    "sync_failed": "Sync Failed",
+    "queue_cap_warning": "Warning: Local queue has reached 80% capacity. Please sync before visiting the next patient.",
+    "sync_now": "Sync Now",
+    "last_synced": "Last synced"
+  },
+  "sync": {
+    "status_online": "Online (Synced)",
+    "status_offline": "Offline (Local Dexie)",
+    "status_syncing": "Syncing...",
+    "status_failed": "Sync Failed (Will Retry)",
+    "pending_single": "item pending",
+    "pending_plural": "items pending",
+    "never_synced": "Never synced",
+    "last_synced": "Last synced",
+    "high_queue_warning": "Warning: Local outbox queue is at ≥80% capacity. Connect to network soon to sync records.",
+    "sync_now": "Sync Now",
+    "syncing_short": "Syncing..."
   }
 }
