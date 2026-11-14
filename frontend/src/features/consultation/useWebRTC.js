@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { getIceServersApi } from './api';
+import { ADAPTIVE_CONFIG } from './adaptiveCallConfig';
 
 /**
- * Custom React Hook for WebRTC 1-to-1 Audio/Video Calling.
+ * Custom React Hook for WebRTC 1-to-1 Audio/Video Calling (Phase 3 Adaptive).
+ * 
  * Features:
- * - Real peer-to-peer media pipeline (RTCPeerConnection)
- * - Fetches STUN/TURN server configuration from backend API
- * - Local audio/video capture with toggle controls (Mute / Camera off)
- * - Remote media track binding
- * - Signalling integration (Offer, Answer, Trickle ICE)
- * - Graceful cleanup of media hardware and connection
+ * - Real peer-to-peer media pipeline (RTCPeerConnection).
+ * - Exposes active RTCPeerConnection for quality monitoring.
+ * - Dynamic mode switching:
+ *   - VIDEO -> AUDIO_ONLY: stops video track & sets low audio sender bitrate.
+ *   - AUDIO_ONLY -> VOICE_NOTE: cleanly closes peer connection, keeping room open.
+ *   - Stepping up reverses these transitions.
+ *   - ICE restart attempt prior to degrading.
+ * - Media controls: Mute audio, camera on/off, clean hangup.
  */
 export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
   const [localStream, setLocalStream] = useState(null);
@@ -18,6 +22,7 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoDisabled, setIsVideoDisabled] = useState(false);
   const [mediaError, setMediaError] = useState(null);
+  const [, setForceUpdate] = useState(0);
 
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -47,16 +52,16 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
     fetchIceConfig();
   }, []);
 
-  // 2. Initialize Local Media Stream
-  const initLocalMedia = useCallback(async () => {
+  // 2. Initialize Local Media Stream (audio + optional video)
+  const initLocalMedia = useCallback(async (videoEnabled = true) => {
     try {
       setMediaError(null);
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
+        video: videoEnabled ? {
           width: { ideal: 640 },
           height: { ideal: 480 },
           frameRate: { max: 24 },
-        },
+        } : false,
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -65,6 +70,7 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
 
       localStreamRef.current = stream;
       setLocalStream(stream);
+      setIsVideoDisabled(!videoEnabled);
       return stream;
     } catch (err) {
       console.error('[WebRTC] Error acquiring media devices:', err);
@@ -119,44 +125,56 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
 
     pc.oniceconnectionstatechange = () => {
       console.log('[WebRTC] ICE state:', pc.iceConnectionState);
-      if ((pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') && pc.connectionState !== 'connected') {
+      if (
+        (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') &&
+        pc.connectionState !== 'connected'
+      ) {
         setConnectionState('connected');
       }
     };
 
     pcRef.current = pc;
+    setForceUpdate((v) => v + 1);
     return pc;
   }, [sendSignal]);
 
   // 4. Start call as Initiator (create & send offer)
-  const createOffer = useCallback(async () => {
+  const createOffer = useCallback(async (options = {}) => {
     let pc = pcRef.current;
     if (!pc) {
       let stream = localStreamRef.current;
       if (!stream) {
-        stream = await initLocalMedia();
+        stream = await initLocalMedia(!options.audioOnly);
       }
       pc = createPeerConnection(stream);
     }
 
     try {
-      const offer = await pc.createOffer({
+      const offerOptions = {
         offerToReceiveAudio: true,
-        offerToReceiveVideo: true,
-      });
+        offerToReceiveVideo: !options.audioOnly,
+        iceRestart: Boolean(options.iceRestart),
+      };
+
+      if (options.iceRestart && typeof pc.restartIce === 'function') {
+        pc.restartIce();
+      }
+
+      const offer = await pc.createOffer(offerOptions);
       await pc.setLocalDescription(offer);
 
-      console.log('[WebRTC] Sending offer SDP');
+      console.log('[WebRTC] Sending offer SDP, iceRestart:', Boolean(options.iceRestart));
       sendSignalRef.current?.('signal_offer', {
         sdp: offer.sdp,
         type: offer.type,
+        iceRestart: Boolean(options.iceRestart),
       });
     } catch (err) {
       console.error('[WebRTC] Error creating offer:', err);
     }
   }, [createPeerConnection, initLocalMedia, sendSignal]);
 
-  // 5. Signalling Handler for incoming Offer, Answer, ICE
+  // 5. Signalling Handler for incoming Offer, Answer, ICE, ICE Restart
   const handleSignal = useCallback(async (type, payload) => {
     console.log('[WebRTC] Handling signal:', type);
 
@@ -218,17 +236,106 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
           if (pc && pc.remoteDescription && pc.remoteDescription.type) {
             await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
           } else {
-            // Queue until remote description is set
             iceCandidatesQueue.current.push(payload.candidate);
           }
         }
       } catch (err) {
         console.error('[WebRTC] Failed to add ICE candidate:', err);
       }
+    } else if (type === 'signal_ice_restart') {
+      console.log('[WebRTC] Received ICE restart request from peer');
+      if (pcRef.current) {
+        createOffer({ iceRestart: true });
+      }
     }
-  }, [createPeerConnection, initLocalMedia, sendSignal]);
+  }, [createPeerConnection, createOffer, initLocalMedia, sendSignal]);
 
-  // 6. Media Controls
+  // 6. Mode Actions (Phase 3 Adaptive Transitions)
+
+  // VIDEO -> AUDIO_ONLY: stops video track & lowers audio bitrate
+  const stepDownToAudioOnly = useCallback(async () => {
+    console.log('[WebRTC Mode] Step down to AUDIO_ONLY: disabling video track & throttling audio');
+    if (localStreamRef.current) {
+      const videoTracks = localStreamRef.current.getVideoTracks();
+      videoTracks.forEach((track) => {
+        track.enabled = false;
+        // Optionally stop camera hardware
+        track.stop();
+      });
+      setIsVideoDisabled(true);
+    }
+
+    // Lower sender bitrate on audio track
+    if (pcRef.current) {
+      try {
+        const senders = pcRef.current.getSenders();
+        const audioSender = senders.find((s) => s.track && s.track.kind === 'audio');
+        if (audioSender && audioSender.getParameters) {
+          const params = audioSender.getParameters();
+          if (!params.encodings) params.encodings = [{}];
+          params.encodings[0].maxBitrate = ADAPTIVE_CONFIG.AUDIO_ONLY_TARGET_BITRATE_BPS;
+          await audioSender.setParameters(params);
+          console.log('[WebRTC Mode] Lowered audio sender bitrate to', ADAPTIVE_CONFIG.AUDIO_ONLY_TARGET_BITRATE_BPS);
+        }
+      } catch (err) {
+        console.warn('[WebRTC Mode] Could not set sender parameters:', err);
+      }
+    }
+  }, []);
+
+  // AUDIO_ONLY -> VOICE_NOTE: closes peer connection cleanly but keeps room open
+  const stepDownToVoiceNote = useCallback(() => {
+    console.log('[WebRTC Mode] Step down to VOICE_NOTE: closing peer connection cleanly');
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      localStreamRef.current = null;
+    }
+    setLocalStream(null);
+    setRemoteStream(null);
+    setConnectionState('closed');
+    setForceUpdate((v) => v + 1);
+  }, []);
+
+  // Step up: re-establish audio or video call
+  const stepUpToAudioOnly = useCallback(async () => {
+    console.log('[WebRTC Mode] Step up to AUDIO_ONLY: re-establishing audio peer connection');
+    const stream = await initLocalMedia(false);
+    if (stream) {
+      const pc = createPeerConnection(stream);
+      await createOffer({ audioOnly: true });
+    }
+  }, [initLocalMedia, createPeerConnection, createOffer]);
+
+  const stepUpToVideo = useCallback(async () => {
+    console.log('[WebRTC Mode] Step up to VIDEO: re-enabling camera and video track');
+    let stream = localStreamRef.current;
+    if (!stream || stream.getVideoTracks().length === 0) {
+      stream = await initLocalMedia(true);
+    } else {
+      stream.getVideoTracks().forEach((track) => {
+        track.enabled = true;
+      });
+      setIsVideoDisabled(false);
+    }
+    if (stream) {
+      createPeerConnection(stream);
+      await createOffer({ audioOnly: false });
+    }
+  }, [initLocalMedia, createPeerConnection, createOffer]);
+
+  // Attempt ICE restart before degrading
+  const attemptIceRestart = useCallback(async () => {
+    console.log('[WebRTC Mode] Attempting ICE restart prior to degrading...');
+    if (pcRef.current) {
+      await createOffer({ iceRestart: true });
+    }
+  }, [createOffer]);
+
+  // Media Controls
   const toggleAudio = useCallback(() => {
     if (localStreamRef.current) {
       const audioTracks = localStreamRef.current.getAudioTracks();
@@ -251,7 +358,7 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
     }
   }, []);
 
-  // 7. Cleanup & Hangup
+  // Cleanup on unmount or hangup
   const endCall = useCallback(() => {
     if (pcRef.current) {
       pcRef.current.close();
@@ -264,9 +371,9 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
     setLocalStream(null);
     setRemoteStream(null);
     setConnectionState('closed');
+    setForceUpdate((v) => v + 1);
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (pcRef.current) {
@@ -279,6 +386,7 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
   }, []);
 
   return {
+    peerConnection: pcRef.current,
     localStream,
     remoteStream,
     connectionState,
@@ -289,6 +397,11 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
     createPeerConnection,
     createOffer,
     handleSignal,
+    stepDownToAudioOnly,
+    stepDownToVoiceNote,
+    stepUpToAudioOnly,
+    stepUpToVideo,
+    attemptIceRestart,
     toggleAudio,
     toggleVideo,
     endCall,

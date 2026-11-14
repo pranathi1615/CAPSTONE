@@ -163,7 +163,24 @@
     "notes_patient_desc": "Clinical notes recorded by your doctor will appear here.",
     "complete_visit_btn": "Mark Consultation Completed",
     "call_ended_by_peer": "The consultation has ended.",
-    "you": "You"
+    "you": "You",
+    "mode_video": "Video Call",
+    "mode_audio": "Audio Only",
+    "mode_voice_note": "Voice Note",
+    "mode_text": "Text Only",
+    "network_mode": "Network Mode",
+    "peer_mode": "Peer Mode",
+    "audio_only_banner": "Audio-Only Mode Active: video paused to protect weak connection.",
+    "voice_note_banner": "Voice-Note Mode Active: call paused. Use push-to-talk voice notes below.",
+    "text_banner": "Text-Only Mode Active: connection severely degraded. Chat is active.",
+    "mode_changed_notice": "Network adaptation: Switched to {{mode}}",
+    "hold_to_record": "Tap to Record Voice Note",
+    "stop_and_send": "Stop & Send",
+    "recording": "Recording",
+    "uploading_voice": "Uploading voice note...",
+    "voice_note_failed": "Voice note upload failed.",
+    "voice_note_failed_downgrade": "Voice note uploads failed. Switched to Text Only mode.",
+    "push_to_record": "Push-to-Talk Voice Note"
   },
   "notifications": {
     "dev_inbox_title": "Developer SMS Inbox"

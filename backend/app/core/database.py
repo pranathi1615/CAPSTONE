@@ -15,7 +15,7 @@ from app.modules.consent.models import Consent
 from app.modules.audit.models import AuditLog
 from app.modules.notifications.models import MockSMS
 from app.modules.appointments.models import DoctorSlot, Booking
-from app.modules.chat.models import ChatMessage
+from app.modules.chat.models import ChatMessage, ConsultationModeEvent, VoiceNote, RoomCounter
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,10 @@ async def init_db() -> None:
             MockSMS,
             DoctorSlot,
             Booking,
-            ChatMessage
+            ChatMessage,
+            ConsultationModeEvent,
+            VoiceNote,
+            RoomCounter
         ]
     )
     logger.info("MongoDB and Beanie ODM initialized successfully with all indexes.")

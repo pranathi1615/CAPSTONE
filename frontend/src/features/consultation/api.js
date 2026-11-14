@@ -50,3 +50,24 @@ export const getConsultationMessagesApi = (roomId) =>
 // Notifications / Mock SMS Inbox
 export const getMockSmsInboxApi = (limit = 50) =>
   apiClient.get(`/notifications/mock-inbox?limit=${limit}`);
+
+// Phase 3: Adaptive Call, Voice Notes, and Mode Events
+export const uploadVoiceNoteApi = (formData) =>
+  apiClient.post('/chat/voice-notes/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+export const recordModeEventApi = ({ consultation_id, from_mode, to_mode, reason, stats_snapshot }) =>
+  apiClient.post('/chat/mode-events', {
+    consultation_id,
+    from_mode,
+    to_mode,
+    reason,
+    stats_snapshot,
+  });
+
+export const getModeEventsApi = (consultationId) =>
+  apiClient.get(`/chat/mode-events/${consultationId}`);
+
+export const getRoomMessagesGapApi = (roomId, afterSeq = 0) =>
+  apiClient.get(`/chat/rooms/${roomId}/messages?after_seq=${afterSeq}`);

@@ -6,8 +6,10 @@ Doctor Queue, In-Call Chat, and MOCK Notifications.
 
 from contextlib import asynccontextmanager
 import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import close_db, init_db
@@ -56,6 +58,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Static files for audio voice notes & uploads
+uploads_dir = os.path.join(os.getcwd(), "uploads")
+os.makedirs(os.path.join(uploads_dir, "voice_notes"), exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+
 # Register modular monolith domain routers
 app.include_router(core_router)
 app.include_router(identity_router)
@@ -71,7 +78,7 @@ async def root():
     return {
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
-        "phase": 2,
+        "phase": 3,
         "docs": "/docs",
         "health": "/health",
         "ws": "/ws"
