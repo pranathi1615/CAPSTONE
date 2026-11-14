@@ -25,6 +25,8 @@ from app.modules.audit.service import append_audit_log
 from app.modules.chat.models import ChatMessage, ConsultationModeEvent, VoiceNote
 from app.modules.consent.models import Consent
 from app.modules.identity.models import DoctorStatus, User, UserRole
+from app.modules.prescriptions.crypto import generate_ed25519_keypair
+from app.modules.pharmacies.service import seed_default_pharmacies
 from tabulate import tabulate
 
 SEEDED_ACCOUNTS = [
@@ -197,12 +199,22 @@ async def reset_demo():
                 )
                 await c.insert()
 
-    # 4. Generate fresh open slots for the NEXT 7 DAYS for every approved doctor
+    # 4. Generate fresh open slots for the NEXT 7 DAYS for every approved doctor & ensure Ed25519 keys
     now = datetime.now(timezone.utc)
     approved_docs = await User.find(
         User.role == UserRole.DOCTOR,
         User.doctor_status == DoctorStatus.APPROVED
     ).to_list()
+
+    for doc in approved_docs:
+        if not doc.signing_private_key or not doc.signing_public_key:
+            priv, pub = generate_ed25519_keypair()
+            doc.signing_private_key = priv
+            doc.signing_public_key = pub
+            await doc.save()
+
+    await seed_default_pharmacies()
+    print("[+] Seeded verified pharmacies with GeoJSON 2dsphere index.")
 
     total_slots = 0
     for doc in approved_docs:

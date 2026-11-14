@@ -26,6 +26,8 @@ from app.modules.audit.service import append_audit_log
 from app.modules.consent.models import Consent
 from app.modules.identity.models import DoctorStatus, User, UserRole
 from app.modules.notifications.service import MockSMSProvider
+from app.modules.prescriptions.crypto import generate_ed25519_keypair
+from app.modules.pharmacies.service import seed_default_pharmacies
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -185,6 +187,14 @@ async def seed() -> None:
     # Seed Doctor availability slots for Dr. Sharma and other approved doctors
     now = datetime.now(timezone.utc)
     approved_docs = await User.find(User.role == UserRole.DOCTOR, User.doctor_status == DoctorStatus.APPROVED).to_list()
+    for doc in approved_docs:
+        if not doc.signing_private_key or not doc.signing_public_key:
+            priv, pub = generate_ed25519_keypair()
+            doc.signing_private_key = priv
+            doc.signing_public_key = pub
+            await doc.save()
+
+    await seed_default_pharmacies()
     for doc in approved_docs:
         future_unbooked = await DoctorSlot.find(
             DoctorSlot.doctor_id == doc.user_id,

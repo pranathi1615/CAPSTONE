@@ -17,6 +17,7 @@ import {
   PhoneCall,
   Radio,
   Volume2,
+  Pill,
 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { useWebSocket } from './useWebSocket';
@@ -28,6 +29,7 @@ import { VoiceNoteRecorder } from './VoiceNoteRecorder';
 import { VoiceNoteCard } from './VoiceNoteCard';
 import { DevSimulatorPanel } from './DevSimulatorPanel';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
+import { PrescriptionWriterModal } from '../records/PrescriptionWriterModal';
 import {
   getConsultationMessagesApi,
   completeConsultationApi,
@@ -49,6 +51,8 @@ export const ConsultationRoom = () => {
   const [clinicalNotes, setClinicalNotes] = useState('');
   const [isSubmittingNotes, setIsSubmittingNotes] = useState(false);
   const [completeSuccess, setCompleteSuccess] = useState(false);
+  const [isPrescribeModalOpen, setIsPrescribeModalOpen] = useState(false);
+  const [issuedPrescription, setIssuedPrescription] = useState(null);
 
   // Phase 3: Adaptive Call Mode State
   const [currentMode, setCurrentMode] = useState(CALL_MODES.VIDEO);
@@ -823,6 +827,29 @@ export const ConsultationRoom = () => {
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
               />
 
+              <button
+                type="button"
+                data-testid="open-prescription-modal-btn"
+                onClick={() => setIsPrescribeModalOpen(true)}
+                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/30 transition active:scale-98"
+              >
+                <Pill className="w-4 h-4" />
+                <span>Write & Sign Digital Prescription (Ed25519)</span>
+              </button>
+
+              {issuedPrescription && (
+                <div
+                  data-testid="issued-prescription-banner"
+                  className="p-3 rounded-xl bg-indigo-950/60 border border-indigo-500/50 text-indigo-300 text-xs flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Prescription issued ({issuedPrescription.items?.length} items)</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-indigo-400">Ed25519 Signed ✓</span>
+                </div>
+              )}
+
               {completeSuccess ? (
                 <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-xs flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 shrink-0" />
@@ -862,6 +889,15 @@ export const ConsultationRoom = () => {
         onResetSimulation={() => setSimulatedStats(null)}
         onSimulateFailedUpload={() => handleVoiceNoteUploadFailed(failedUploads + 1)}
         onSimulateOffline={disconnectTemporarily}
+      />
+
+      <PrescriptionWriterModal
+        isOpen={isPrescribeModalOpen}
+        onClose={() => setIsPrescribeModalOpen(false)}
+        patientId={searchParams.get('patientId') || 'patient.anita@carebridge.local'}
+        patientName={searchParams.get('patientName') || 'Anita Devi'}
+        consultationId={roomId}
+        onPrescriptionCreated={(rx) => setIssuedPrescription(rx)}
       />
     </div>
   );

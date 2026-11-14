@@ -17,6 +17,9 @@ from app.modules.audit.models import AuditLog
 from app.modules.appointments.models import DoctorSlot, Booking
 from app.modules.notifications.models import MockSMS
 from app.modules.chat.models import ChatMessage
+from app.modules.clinical.models import ClinicalRecord
+from app.modules.prescriptions.models import Prescription
+from app.modules.pharmacies.models import Pharmacy
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
@@ -31,6 +34,9 @@ async def setup_test_db_and_collections():
     await Booking.delete_all()
     await MockSMS.delete_all()
     await ChatMessage.delete_all()
+    await ClinicalRecord.delete_all()
+    await Prescription.delete_all()
+    await Pharmacy.delete_all()
     yield
     await User.delete_all()
     await Consent.delete_all()
@@ -39,6 +45,9 @@ async def setup_test_db_and_collections():
     await Booking.delete_all()
     await MockSMS.delete_all()
     await ChatMessage.delete_all()
+    await ClinicalRecord.delete_all()
+    await Prescription.delete_all()
+    await Pharmacy.delete_all()
     await close_redis()
     await close_db()
 

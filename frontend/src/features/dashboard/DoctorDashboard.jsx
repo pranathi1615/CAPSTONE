@@ -98,7 +98,9 @@ export const DoctorDashboard = () => {
       setActionError('');
       const res = await callPatientApi(booking.booking_id);
       const roomId = res.data?.room_id || booking.consultation_room_id || booking.room_id;
-      navigate(`/consultation/${roomId}?bookingId=${booking.booking_id}`);
+      navigate(
+        `/consultation/${roomId}?bookingId=${booking.booking_id}&patientId=${booking.patient_id}&patientName=${encodeURIComponent(booking.patient_name || 'Patient')}`
+      );
     } catch (err) {
       setActionError(err.response?.data?.detail || 'Failed to start call with patient.');
       setCallingBookingId(null);
