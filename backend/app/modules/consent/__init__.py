@@ -1,0 +1,1 @@
+"""Patient consent management module."""
