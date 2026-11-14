@@ -48,6 +48,16 @@ SEED_USERS = [
         "phone": "+919800000002",
         "doctor_status": DoctorStatus.APPROVED,
         "registration_number": "MCI-2024-9871",
+        "specialty": "General Medicine",
+    },
+    {
+        "email": "dr.cardio@carebridge.local",
+        "password": "Doctor@123",
+        "full_name": "Dr. Sunita Rao, MD",
+        "role": UserRole.DOCTOR,
+        "phone": "+919800000007",
+        "doctor_status": DoctorStatus.APPROVED,
+        "registration_number": "MCI-2024-5544",
         "specialty": "Cardiology",
     },
     {
@@ -58,7 +68,7 @@ SEED_USERS = [
         "phone": "+919800000003",
         "doctor_status": DoctorStatus.PENDING,
         "registration_number": "MCI-2024-1122",
-        "specialty": "General Medicine",
+        "specialty": "Pediatrics",
     },
     {
         "email": "patient.anita@carebridge.local",
@@ -172,21 +182,26 @@ async def seed() -> None:
                 payload={"consent_id": consent.consent_id, "purpose": consent.purpose}
             )
 
-    # Seed Doctor availability slots for Dr. Sharma
-    if created_doctor:
-        now = datetime.now(timezone.utc)
-        existing_slots = await DoctorSlot.find(DoctorSlot.doctor_id == created_doctor.user_id).count()
-        if existing_slots == 0:
-            for i in range(1, 5):
-                slot_start = now + timedelta(hours=i)
-                slot_end = slot_start + timedelta(minutes=30)
+    # Seed Doctor availability slots for Dr. Sharma and other approved doctors
+    now = datetime.now(timezone.utc)
+    approved_docs = await User.find(User.role == UserRole.DOCTOR, User.doctor_status == DoctorStatus.APPROVED).to_list()
+    for doc in approved_docs:
+        future_unbooked = await DoctorSlot.find(
+            DoctorSlot.doctor_id == doc.user_id,
+            DoctorSlot.is_booked == False,
+            DoctorSlot.slot_start > now
+        ).count()
+        if future_unbooked < 6:
+            for i in range(1, 9):
+                slot_start = now + timedelta(minutes=i * 30)
+                slot_end = slot_start + timedelta(minutes=25)
                 slot = DoctorSlot(
-                    doctor_id=created_doctor.user_id,
-                    doctor_name=created_doctor.full_name,
-                    specialty=created_doctor.specialty,
+                    doctor_id=doc.user_id,
+                    doctor_name=doc.full_name,
+                    specialty=doc.specialty,
                     slot_start=slot_start,
                     slot_end=slot_end,
-                    is_booked=(i == 1)  # First slot is booked for sample
+                    is_booked=False
                 )
                 await slot.insert()
 

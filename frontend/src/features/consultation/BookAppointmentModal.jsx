@@ -25,7 +25,13 @@ export const BookAppointmentModal = ({ isOpen, onClose, onSuccess, patientId = n
         setLoadingDoctors(true);
         setError('');
         const res = await getApprovedDoctorsApi(specialty);
-        setDoctors(res.data || []);
+        const docs = res.data || [];
+        setDoctors(docs);
+        if (docs.length > 0) {
+          setSelectedDoctor((prev) => (prev && docs.some((d) => d.user_id === prev.user_id) ? prev : docs[0]));
+        } else {
+          setSelectedDoctor(null);
+        }
       } catch (err) {
         setError(err.response?.data?.detail || 'Failed to load approved doctors.');
       } finally {
@@ -49,9 +55,14 @@ export const BookAppointmentModal = ({ isOpen, onClose, onSuccess, patientId = n
         setLoadingSlots(true);
         setError('');
         const res = await getDoctorSlotsApi(selectedDoctor.user_id);
-        // Only active/available slots
-        const available = (res.data || []).filter((s) => s.is_available);
+        // DoctorSlotResponse returns is_booked (false means available)
+        const available = (res.data || []).filter((s) => !s.is_booked);
         setSlots(available);
+        if (available.length > 0) {
+          setSelectedSlot(available[0]);
+        } else {
+          setSelectedSlot(null);
+        }
       } catch (err) {
         setError('Failed to load slots for selected doctor.');
       } finally {

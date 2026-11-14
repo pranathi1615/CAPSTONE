@@ -58,8 +58,9 @@ async def list_approved_doctors(specialty: Optional[str] = None) -> List[User]:
         User.role == UserRole.DOCTOR,
         User.doctor_status == DoctorStatus.APPROVED,
     ]
-    if specialty:
-        query.append(User.specialty == specialty)
+    if specialty and specialty.strip() and specialty.strip().lower() != "all specialties":
+        import re
+        query.append({"specialty": {"$regex": f"^{re.escape(specialty.strip())}$", "$options": "i"}})
     return await User.find(*query).to_list()
 
 

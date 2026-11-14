@@ -149,6 +149,11 @@ export const useWebRTC = ({ sendSignal, isInitiator = false }) => {
       pc = createPeerConnection(stream);
     }
 
+    if (pc.signalingState !== 'stable' && !options.iceRestart) {
+      console.warn('[WebRTC] Signaling state is not stable (' + pc.signalingState + '), skipping duplicate offer.');
+      return;
+    }
+
     try {
       const offerOptions = {
         offerToReceiveAudio: true,
