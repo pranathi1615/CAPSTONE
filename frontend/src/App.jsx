@@ -5,6 +5,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './features/auth/LoginPage';
 import { RegisterPage } from './features/auth/RegisterPage';
 import { DashboardLayout } from './features/dashboard/DashboardLayout';
+import { ConsultationRoom } from './features/consultation/ConsultationRoom';
+import { DevInboxPage } from './features/notifications/DevInboxPage';
 
 export function App() {
   return (
@@ -16,6 +18,15 @@ export function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardLayout />} />
+            <Route path="/consultation/:roomId" element={<ConsultationRoom />} />
+            <Route
+              path="/dev-inbox"
+              element={
+                <DashboardLayout>
+                  <DevInboxPage />
+                </DashboardLayout>
+              }
+            />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

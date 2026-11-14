@@ -26,7 +26,7 @@ test.describe('Patient Authentication and Telugu Localization', () => {
     // 6. Assert Patient Dashboard shell in Telugu
     // Heading: "స్వాగతం, Anita Devi!"
     await expect(page.getByText(/స్వాగతం/)).toBeVisible();
-    await expect(page.getByText(/Anita Devi/)).toBeVisible();
+    await expect(page.getByText(/Anita Devi/).first()).toBeVisible();
 
     // Consents Section Header in Telugu: "నా టెలిహెల్త్ సమ్మతులు"
     await expect(page.getByText('నా టెలిహెల్త్ సమ్మతులు')).toBeVisible();

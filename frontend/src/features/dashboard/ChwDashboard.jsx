@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HeartHandshake, UserPlus, ShieldCheck, CheckCircle2, WifiOff } from 'lucide-react';
+import { HeartHandshake, UserPlus, ShieldCheck, CheckCircle2, WifiOff, Calendar } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { grantConsentApi } from '../auth/api';
+import { BookAppointmentModal } from '../consultation/BookAppointmentModal';
 
 export const ChwDashboard = () => {
   const { t } = useTranslation();
@@ -13,6 +14,10 @@ export const ChwDashboard = () => {
   const [statusMsg, setStatusMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // CHW Assisted Booking Modal
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [assistedPatientId, setAssistedPatientId] = useState('');
 
   const handleRecordConsent = async (e) => {
     e.preventDefault();
@@ -29,6 +34,12 @@ export const ChwDashboard = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleOpenAssistedBooking = (e) => {
+    e.preventDefault();
+    if (!assistedPatientId.trim()) return;
+    setIsBookModalOpen(true);
   };
 
   return (
@@ -48,6 +59,45 @@ export const ChwDashboard = () => {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Book Consultation on Behalf of Patient Card */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-2 pb-4 border-b border-slate-100">
+          <Calendar className="w-6 h-6 text-amber-600" />
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">
+              {t('chw_dashboard.book_on_behalf_heading') || 'Assisted Telehealth Consultation Booking'}
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Schedule an appointment with an approved doctor on behalf of a rural patient
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleOpenAssistedBooking} className="mt-6 space-y-4 max-w-xl">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">
+              {t('chw_dashboard.patient_id_label')} *
+            </label>
+            <input
+              type="text"
+              required
+              value={assistedPatientId}
+              onChange={(e) => setAssistedPatientId(e.target.value)}
+              placeholder="e.g. 023ee6e2-d28a-495a-9bc0-d0c5ad668369"
+              className="block w-full px-4 py-3 min-h-[48px] rounded-xl border border-slate-300 shadow-2xs focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-slate-900 text-sm font-mono"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-xl bg-amber-600 text-white font-semibold hover:bg-amber-700 active:bg-amber-800 transition-colors shadow-xs text-sm cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            {t('chw_dashboard.open_booking_modal_btn') || 'Select Doctor & Book Slot'}
+          </button>
+        </form>
       </div>
 
       {/* Record Consent on Behalf of Patient Card */}
@@ -136,6 +186,15 @@ export const ChwDashboard = () => {
           </div>
         </div>
       </div>
+
+      <BookAppointmentModal
+        patientId={assistedPatientId.trim()}
+        isOpen={isBookModalOpen}
+        onClose={() => setIsBookModalOpen(false)}
+        onSuccess={() => {
+          setStatusMsg('Consultation booked successfully on behalf of patient!');
+        }}
+      />
     </div>
   );
 };

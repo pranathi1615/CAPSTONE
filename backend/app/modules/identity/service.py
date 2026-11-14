@@ -116,7 +116,8 @@ async def authenticate_user(data: LoginRequest) -> TokenResponse:
     token_payload = {
         "sub": user.user_id,
         "email": user.email,
-        "role": user.role.value
+        "role": user.role.value,
+        "full_name": user.full_name
     }
     access_token = create_access_token(token_payload)
     refresh_token = create_refresh_token(token_payload)
@@ -169,7 +170,8 @@ async def refresh_access_token(refresh_token: str) -> TokenResponse:
     token_payload = {
         "sub": user.user_id,
         "email": user.email,
-        "role": user.role.value
+        "role": user.role.value,
+        "full_name": user.full_name
     }
     new_access_token = create_access_token(token_payload)
     new_refresh_token = create_refresh_token(token_payload)

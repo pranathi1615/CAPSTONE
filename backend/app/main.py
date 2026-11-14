@@ -1,7 +1,7 @@
 """CareBridge Backend Main Application.
 
-Phase 1: Foundation, Sign-in, Role-Based Access Control, and Patient Consent.
-Modular monolith structure with Beanie ODM, FastAPI, Redis, and cryptographic audit log.
+Phase 1 & 2: Modular Monolith with Real-time Visits, WebSockets, WebRTC Signalling,
+Doctor Queue, In-Call Chat, and MOCK Notifications.
 """
 
 from contextlib import asynccontextmanager
@@ -16,6 +16,9 @@ from app.modules.core.router import router as core_router
 from app.modules.identity.router import router as identity_router
 from app.modules.consent.router import router as consent_router
 from app.modules.audit.router import router as audit_router
+from app.modules.notifications.router import router as notifications_router
+from app.modules.appointments.router import router as appointments_router
+from app.modules.chat.router import router as chat_router
 
 # Configure logging
 logging.basicConfig(
@@ -53,11 +56,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register modular monolith routers
+# Register modular monolith domain routers
 app.include_router(core_router)
 app.include_router(identity_router)
 app.include_router(consent_router)
 app.include_router(audit_router)
+app.include_router(notifications_router)
+app.include_router(appointments_router)
+app.include_router(chat_router)
 
 
 @app.get("/")
@@ -65,7 +71,8 @@ async def root():
     return {
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
-        "phase": 1,
+        "phase": 2,
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "ws": "/ws"
     }

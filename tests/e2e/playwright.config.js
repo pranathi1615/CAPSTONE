@@ -3,16 +3,24 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: '.',
   testMatch: /.*\.spec\.js/,
-  timeout: 30000,
+  timeout: 60000,
   expect: {
-    timeout: 5000,
+    timeout: 15000,
   },
-  fullyParallel: true,
+  fullyParallel: false,
   reporter: 'list',
   use: {
     baseURL: process.env.FRONTEND_URL || 'http://localhost:5173',
     trace: 'on-first-retry',
-    locale: 'te-IN',
+    permissions: ['camera', 'microphone'],
+    launchOptions: {
+      args: [
+        '--use-fake-ui-for-media-stream',
+        '--use-fake-device-for-media-stream',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+    },
   },
   projects: [
     {

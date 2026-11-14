@@ -1,4 +1,4 @@
-name: CareBridge CI - Phase 1
+name: CareBridge CI
 
 on:
   push:

@@ -12,6 +12,8 @@
   "revoked": "Revoked",
   "pending": "Pending Verification",
   "approved": "Approved",
+  "online": "Online",
+  "offline": "Offline",
   "nav": {
     "dashboard": "Dashboard",
     "consents": "Consent Records",
@@ -58,7 +60,7 @@
     "revoke_btn": "Revoke Consent",
     "revoking": "Revoking...",
     "quick_actions": "Quick Actions",
-    "consultation_shell": "Start Teleconsultation (Phase 2)",
+    "consultation_shell": "Start Teleconsultation",
     "records_shell": "View Medical Records (Phase 4)"
   },
   "doctor_dashboard": {
@@ -68,7 +70,16 @@
     "status_pending_msg": "Your medical registration is currently pending admin verification. You cannot be booked by patients until approved.",
     "schedule_preview": "Upcoming Consultation Queue",
     "queue_empty": "No patients currently in your queue.",
-    "start_call_shell": "Consultation Screen (Phase 2)"
+    "start_call_shell": "Consultation Screen",
+    "add_slot_btn": "Add Availability Slot",
+    "add_slot_title": "Add Availability Slot",
+    "add_slot_desc": "Define weekly or daily consulting hours",
+    "slot_start": "Slot Start Time",
+    "slot_end": "Slot End Time",
+    "create_slot_btn": "Create Slot",
+    "live_queue_title": "Live Patient Waiting Queue",
+    "waiting_count": "Waiting",
+    "slots_heading": "My Availability Slots"
   },
   "chw_dashboard": {
     "welcome": "CHW Field Operations",
@@ -79,7 +90,9 @@
     "record_consent_btn": "Record Consent on Behalf of Patient",
     "consent_success": "Consent recorded on behalf of patient successfully!",
     "field_tools": "Community Field Tools",
-    "assisted_visit_shell": "Assisted Visit & Offline Mode (Phase 5)"
+    "assisted_visit_shell": "Assisted Visit & Offline Mode (Phase 5)",
+    "book_on_behalf_heading": "Assisted Telehealth Consultation Booking",
+    "open_booking_modal_btn": "Select Doctor & Book Slot"
   },
   "pharmacy_dashboard": {
     "welcome": "Pharmacy Dispense Portal",
@@ -116,5 +129,43 @@
     "records_sharing": "Medical Records & History Sharing",
     "emergency_triage": "Emergency Triage & Urgent Care",
     "confirm_btn": "Confirm & Grant Consent"
+  },
+  "appointments": {
+    "book_title": "Book Telehealth Consultation",
+    "book_desc": "Select an approved doctor and availability slot",
+    "filter_specialty": "Filter by Specialty",
+    "all_specialties": "All Specialties",
+    "select_doctor": "Select Approved Doctor",
+    "select_slot": "Available Slot",
+    "reason_label": "Reason for Visit",
+    "confirm_booking": "Confirm Booking",
+    "book_consultation_btn": "Book Consultation",
+    "my_consultations": "My Telehealth Consultations",
+    "my_consultations_desc": "Join live visits with approved doctors or track appointment status",
+    "no_consultations": "No scheduled consultations yet.",
+    "confirm_cancel": "Are you sure you want to cancel this appointment?"
+  },
+  "consultation": {
+    "title": "Teleconsultation Visit",
+    "waiting_for_peer": "Waiting for peer...",
+    "waiting_connection": "Waiting for connection...",
+    "connecting_webrtc": "Establishing peer-to-peer WebRTC connection...",
+    "media_flowing": "Media flowing, receiving stream...",
+    "start_call_btn": "Connect Media (Start Call)",
+    "end_call": "End Call",
+    "confirm_leave": "Are you sure you want to leave the consultation?",
+    "tab_chat": "In-Call Chat",
+    "tab_notes": "Clinical Notes",
+    "chat_empty": "No messages yet. Send a message to start conversation.",
+    "type_message_placeholder": "Type a message...",
+    "notes_heading": "Consultation Summary & Notes",
+    "notes_doctor_desc": "Record diagnosis, clinical observations, and advice for the patient record.",
+    "notes_patient_desc": "Clinical notes recorded by your doctor will appear here.",
+    "complete_visit_btn": "Mark Consultation Completed",
+    "call_ended_by_peer": "The consultation has ended.",
+    "you": "You"
+  },
+  "notifications": {
+    "dev_inbox_title": "Developer SMS Inbox"
   }
 }

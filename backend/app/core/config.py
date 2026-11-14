@@ -4,7 +4,7 @@ Loads environment variables with sensible defaults for local development
 and containerized deployment.
 """
 
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,6 +33,12 @@ class Settings(BaseSettings):
     RATE_LIMIT_LOGIN_WINDOW_SECONDS: int = 60
     RATE_LIMIT_REGISTER_ATTEMPTS: int = 10
     RATE_LIMIT_REGISTER_WINDOW_SECONDS: int = 60
+
+    # WebRTC STUN and Coturn TURN Configuration
+    STUN_SERVER_URL: str = "stun:stun.l.google.com:19302"
+    TURN_SERVER_URL: Optional[str] = "turn:localhost:3478"
+    TURN_USERNAME: Optional[str] = "carebridge"
+    TURN_PASSWORD: Optional[str] = "turnsecret123"
 
     # CORS
     CORS_ORIGINS: List[str] = [

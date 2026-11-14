@@ -13,6 +13,9 @@ from app.core.config import settings
 from app.modules.identity.models import User
 from app.modules.consent.models import Consent
 from app.modules.audit.models import AuditLog
+from app.modules.notifications.models import MockSMS
+from app.modules.appointments.models import DoctorSlot, Booking
+from app.modules.chat.models import ChatMessage
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,11 @@ async def init_db() -> None:
         document_models=[
             User,
             Consent,
-            AuditLog
+            AuditLog,
+            MockSMS,
+            DoctorSlot,
+            Booking,
+            ChatMessage
         ]
     )
     logger.info("MongoDB and Beanie ODM initialized successfully with all indexes.")
@@ -56,7 +63,6 @@ async def is_mongo_healthy() -> bool:
     if not mongo_client:
         return False
     try:
-        # Run a quick ping command
         await mongo_client.admin.command("ping")
         return True
     except Exception as exc:
