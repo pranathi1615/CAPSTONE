@@ -79,8 +79,15 @@ export const revokeConsentApi = (consentId) =>
   apiClient.post(`/consents/${consentId}/revoke`);
 
 // Audit endpoints (Admin)
-export const getAuditLogsApi = (limit = 50) =>
-  apiClient.get(`/audit?limit=${limit}`);
+export const getAuditLogsApi = (limit = 50, eventType = '') => {
+  const url = eventType
+    ? `/audit?limit=${limit}&event_type=${encodeURIComponent(eventType)}`
+    : `/audit?limit=${limit}`;
+  return apiClient.get(url);
+};
+
+export const getAuditStatsApi = () =>
+  apiClient.get('/audit/stats');
 
 export const verifyAuditChainApi = () =>
   apiClient.get('/audit/verify');

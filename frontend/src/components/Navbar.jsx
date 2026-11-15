@@ -42,7 +42,7 @@ export const Navbar = () => {
                   {t('app_title')}
                 </span>
                 <span className="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
-                  Phase 6 (Triage, Emergency & Follow-up)
+                  Phase 7 (Analytics, Audit Verification & Hardening)
                 </span>
               </div>
             </Link>

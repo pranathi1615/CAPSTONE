@@ -121,7 +121,10 @@
     "chain_valid": "Audit Chain Intact & Verified",
     "chain_invalid": "Audit Chain Tampering Detected!",
     "blocks_verified": "Blocks Cryptographically Verified",
-    "recent_logs": "Recent Audit Entries"
+    "recent_logs": "Recent Audit Entries",
+    "tab_audit": "Audit Chain Inspector",
+    "tab_analytics": "Platform Analytics",
+    "tab_approvals": "Doctor Approvals"
   },
   "consent_modal": {
     "title": "Grant Telehealth Consent",

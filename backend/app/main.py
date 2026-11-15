@@ -30,6 +30,7 @@ from app.modules.triage.router import router as triage_router
 from app.modules.async_consults.router import router as async_consults_router
 from app.modules.followups.router import router as followups_router
 from app.modules.referrals.router import router as referrals_router
+from app.modules.analytics.router import router as analytics_router
 
 # Configure logging
 logging.basicConfig(
@@ -67,6 +68,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def add_security_headers_middleware(request, call_next):
+    """Production deployment hardening: security headers middleware."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=*, microphone=*, geolocation=*"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; "
+        "connect-src 'self' ws: wss: http: https: data: blob:; "
+        "media-src 'self' blob: data:; "
+        "img-src 'self' data: blob: https:; "
+        "font-src 'self' data: https:;"
+    )
+    return response
+
+
 # Static files for audio voice notes & uploads
 uploads_dir = os.path.join(os.getcwd(), "uploads")
 os.makedirs(os.path.join(uploads_dir, "voice_notes"), exist_ok=True)
@@ -89,6 +110,7 @@ app.include_router(triage_router)
 app.include_router(async_consults_router)
 app.include_router(followups_router)
 app.include_router(referrals_router)
+app.include_router(analytics_router)
 
 
 @app.get("/")
@@ -96,7 +118,7 @@ async def root():
     return {
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
-        "phase": 6,
+        "phase": 7,
         "docs": "/docs",
         "health": "/health",
         "ws": "/ws"

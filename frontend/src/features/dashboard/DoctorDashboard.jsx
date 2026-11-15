@@ -19,7 +19,8 @@ import { AddSlotModal } from '../consultation/AddSlotModal';
 import { DoctorEmergencyAlertBanner } from '../triage/DoctorEmergencyAlertBanner';
 import { DoctorAsyncInbox } from '../triage/DoctorAsyncInbox';
 import { ReferralNoteGeneratorModal } from '../triage/ReferralNoteGeneratorModal';
-import { Inbox, FileText, AlertOctagon } from 'lucide-react';
+import { AnalyticsDashboard } from '../analytics/AnalyticsDashboard';
+import { Inbox, FileText, AlertOctagon, BarChart3 } from 'lucide-react';
 
 export const DoctorDashboard = () => {
   const { t } = useTranslation();
@@ -256,6 +257,19 @@ export const DoctorDashboard = () => {
               {slots.length}
             </span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('analytics')}
+            className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'analytics'
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>Clinical Analytics</span>
+          </button>
         </div>
       )}
 
@@ -471,6 +485,11 @@ export const DoctorDashboard = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* TAB 4: CLINICAL ANALYTICS */}
+      {activeTab === 'analytics' && isApproved && (
+        <AnalyticsDashboard />
       )}
 
       <AddSlotModal
