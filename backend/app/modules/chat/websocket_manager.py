@@ -169,6 +169,33 @@ class ConnectionManager:
         except Exception:
             pass
 
+    async def broadcast_to_role(
+        self,
+        role: str,
+        message_type: str,
+        payload: Dict[str, Any]
+    ):
+        """Broadcast envelope to all connected sockets matching a specific role."""
+        envelope = {
+            "type": message_type,
+            "id": str(uuid.uuid4()),
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "room": "role_alerts",
+            "payload": payload
+        }
+        for room_id, conns in list(self.active_rooms.items()):
+            for cid, meta in list(conns.items()):
+                if meta.get("user", {}).get("role") == role:
+                    try:
+                        await meta["ws"].send_text(json.dumps(envelope))
+                    except Exception:
+                        pass
+        try:
+            r = get_redis()
+            await r.publish(f"carebridge:role:{role}", json.dumps(envelope))
+        except Exception:
+            pass
+
     async def _dispatch_local(self, room_id: str, envelope: Dict[str, Any]):
         """Deliver envelope to connected local WebSockets in room."""
         room_connections = self.active_rooms.get(room_id, {})

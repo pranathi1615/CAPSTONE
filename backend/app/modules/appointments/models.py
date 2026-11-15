@@ -61,6 +61,11 @@ class Booking(Document):
     status: BookingStatus = BookingStatus.BOOKED
     consultation_room_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
+    # Triage and clinical urgency
+    urgency: str = "routine"  # emergency | urgent | soon | routine
+    urgency_reason: Optional[str] = None
+    is_red_flag: bool = False
+
     # Queue ordering by arrival timestamp
     joined_waiting_at: Optional[datetime] = None
     call_started_at: Optional[datetime] = None

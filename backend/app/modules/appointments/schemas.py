@@ -34,6 +34,10 @@ class BookAppointmentRequest(BaseModel):
     patient_id: Optional[str] = None  # Optional if patient books for self; required if CHW books
     slot_start: datetime
     slot_end: datetime
+    reason: Optional[str] = None
+    urgency: Optional[str] = "routine"
+    urgency_reason: Optional[str] = None
+    is_red_flag: Optional[bool] = False
 
 
 class BookingResponse(BaseModel):
@@ -50,6 +54,9 @@ class BookingResponse(BaseModel):
     slot_end: datetime
     status: BookingStatus
     consultation_room_id: str
+    urgency: str = "routine"
+    urgency_reason: Optional[str] = None
+    is_red_flag: bool = False
     joined_waiting_at: Optional[datetime] = None
     call_started_at: Optional[datetime] = None
     call_ended_at: Optional[datetime] = None
@@ -63,6 +70,9 @@ class QueueItemResponse(BaseModel):
     patient_id: str
     patient_name: str
     status: BookingStatus
+    urgency: str = "routine"
+    urgency_reason: Optional[str] = None
+    is_red_flag: bool = False
     joined_waiting_at: Optional[datetime]
     slot_start: datetime
     wait_seconds: int = 0

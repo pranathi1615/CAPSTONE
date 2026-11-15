@@ -22,6 +22,10 @@ from app.modules.prescriptions.models import Prescription
 from app.modules.pharmacies.models import Pharmacy
 from app.modules.sync.models import SyncReceipt
 from app.modules.assisted_visits.models import AssistedVisit
+from app.modules.triage.models import TriageEvaluation
+from app.modules.async_consults.models import AsyncConsult
+from app.modules.followups.models import FollowUp
+from app.modules.referrals.models import ReferralNote
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
@@ -41,6 +45,10 @@ async def setup_test_db_and_collections():
     await Pharmacy.delete_all()
     await SyncReceipt.delete_all()
     await AssistedVisit.delete_all()
+    await TriageEvaluation.delete_all()
+    await AsyncConsult.delete_all()
+    await FollowUp.delete_all()
+    await ReferralNote.delete_all()
     yield
     await User.delete_all()
     await Consent.delete_all()
@@ -54,6 +62,10 @@ async def setup_test_db_and_collections():
     await Pharmacy.delete_all()
     await SyncReceipt.delete_all()
     await AssistedVisit.delete_all()
+    await TriageEvaluation.delete_all()
+    await AsyncConsult.delete_all()
+    await FollowUp.delete_all()
+    await ReferralNote.delete_all()
     await close_redis()
     await close_db()
 

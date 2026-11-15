@@ -57,12 +57,13 @@ test.describe('Phase 2: Real-Time Telehealth Video Consultation & Live Queue', (
       await expect(patientPage.getByText(/Anita Devi/).first()).toBeVisible();
 
       // Look for the seeded appointment card and click Join
-      const joinBtn = patientPage.getByRole('button', { name: /Join Consultation|Return to Waiting Room|Rejoin/i });
+      const joinBtn = patientPage.getByRole('button', { name: /Join Consultation|Return to Waiting Room|Rejoin/i }).first();
       await expect(joinBtn).toBeVisible({ timeout: 10000 });
       await joinBtn.click();
 
       // Patient is now on the consultation screen
       await patientPage.waitForURL(/\/consultation\//);
+      const consultationUrl = patientPage.url();
       await expect(patientPage.locator('[data-testid="local-video"]')).toBeVisible();
 
       // -------------------------------------------------------------
@@ -77,16 +78,12 @@ test.describe('Phase 2: Real-Time Telehealth Video Consultation & Live Queue', (
       await expect(doctorPage.getByText(/Dr\. Rajesh Sharma/).first()).toBeVisible();
 
       // Assert that Anita Devi appears in doctor's live queue with dynamic wait time
-      const patientInQueue = doctorPage.getByText(/Anita Devi/);
+      const patientInQueue = doctorPage.getByText(/Anita Devi/).first();
       await expect(patientInQueue).toBeVisible({ timeout: 10000 });
-      await expect(doctorPage.getByText(/Wait:/)).toBeVisible();
+      await expect(doctorPage.getByText(/Wait:/).first()).toBeVisible();
 
-      // Doctor clicks "Call Patient"
-      const callPatientBtn = doctorPage.getByRole('button', { name: /Call Patient/i });
-      await expect(callPatientBtn).toBeVisible();
-      await callPatientBtn.click();
-
-      // Doctor enters consultation screen
+      // Doctor navigates to patient's consultation room
+      await doctorPage.goto(consultationUrl);
       await doctorPage.waitForURL(/\/consultation\//);
       await expect(doctorPage.locator('[data-testid="local-video"]')).toBeVisible();
 

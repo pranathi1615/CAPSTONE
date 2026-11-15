@@ -26,6 +26,10 @@ from app.modules.sync.router import router as sync_router
 from app.modules.prescriptions.router import router as prescriptions_router
 from app.modules.pharmacies.router import router as pharmacies_router
 from app.modules.assisted_visits.router import router as assisted_visits_router
+from app.modules.triage.router import router as triage_router
+from app.modules.async_consults.router import router as async_consults_router
+from app.modules.followups.router import router as followups_router
+from app.modules.referrals.router import router as referrals_router
 
 # Configure logging
 logging.basicConfig(
@@ -81,6 +85,10 @@ app.include_router(sync_router)
 app.include_router(prescriptions_router)
 app.include_router(pharmacies_router)
 app.include_router(assisted_visits_router)
+app.include_router(triage_router)
+app.include_router(async_consults_router)
+app.include_router(followups_router)
+app.include_router(referrals_router)
 
 
 @app.get("/")
@@ -88,7 +96,7 @@ async def root():
     return {
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
-        "phase": 5,
+        "phase": 6,
         "docs": "/docs",
         "health": "/health",
         "ws": "/ws"

@@ -51,6 +51,7 @@ SEED_USERS = [
         "doctor_status": DoctorStatus.APPROVED,
         "registration_number": "MCI-2024-9871",
         "specialty": "General Medicine",
+        "is_on_call": True,
     },
     {
         "email": "dr.cardio@carebridge.local",
@@ -61,6 +62,7 @@ SEED_USERS = [
         "doctor_status": DoctorStatus.APPROVED,
         "registration_number": "MCI-2024-5544",
         "specialty": "Cardiology",
+        "is_on_call": True,
     },
     {
         "email": "dr.pending@carebridge.local",
@@ -130,6 +132,7 @@ async def seed() -> None:
                 doctor_status=item["doctor_status"],
                 registration_number=item["registration_number"],
                 specialty=item["specialty"],
+                is_on_call=item.get("is_on_call", False),
                 is_active=True
             )
             await user.insert()
@@ -147,6 +150,9 @@ async def seed() -> None:
             )
             created_user = user
         else:
+            if "is_on_call" in item:
+                existing.is_on_call = item["is_on_call"]
+                await existing.save()
             created_user = existing
 
         if item["role"] == UserRole.PATIENT:

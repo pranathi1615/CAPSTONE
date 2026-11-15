@@ -44,6 +44,7 @@ class User(Document):
     registration_number: Optional[str] = None
     specialty: Optional[str] = None
     doctor_status: Optional[DoctorStatus] = None
+    is_on_call: bool = False
 
     # Doctor cryptographic signing keypair (Phase 4 Ed25519)
     # SECURITY NOTE: In production, store in an HSM/KMS. Stored encrypted/base64 in DB for capstone.

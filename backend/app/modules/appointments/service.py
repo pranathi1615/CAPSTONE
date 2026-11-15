@@ -45,6 +45,9 @@ def booking_to_response(b: Booking) -> BookingResponse:
         slot_end=b.slot_end,
         status=b.status,
         consultation_room_id=b.consultation_room_id,
+        urgency=getattr(b, "urgency", "routine") or "routine",
+        urgency_reason=getattr(b, "urgency_reason", None),
+        is_red_flag=getattr(b, "is_red_flag", False) or False,
         joined_waiting_at=b.joined_waiting_at,
         call_started_at=b.call_started_at,
         call_ended_at=b.call_ended_at,
@@ -233,6 +236,9 @@ async def book_appointment(data: BookAppointmentRequest, actor: User) -> Booking
         slot_start=data.slot_start,
         slot_end=data.slot_end,
         status=BookingStatus.BOOKED,
+        urgency=getattr(data, "urgency", "routine") or "routine",
+        urgency_reason=getattr(data, "urgency_reason", None),
+        is_red_flag=getattr(data, "is_red_flag", False) or False,
         created_at=now,
         updated_at=now,
     )
@@ -337,15 +343,33 @@ async def join_waiting_room(booking_id: str, actor: User) -> BookingResponse:
 
 
 async def get_live_doctor_queue(doctor_user_id: str) -> List[QueueItemResponse]:
-    """Retrieve doctor's waiting queue, strictly ordered by arrival timestamp."""
+    """Retrieve doctor's waiting queue, sorted by clinical urgency, then arrival timestamp."""
     active_bookings = await Booking.find(
         Booking.doctor_id == doctor_user_id,
         Booking.status == BookingStatus.WAITING
-    ).sort("+joined_waiting_at").to_list()
+    ).to_list()
+
+    URGENCY_WEIGHTS = {
+        "emergency": 4,
+        "urgent": 3,
+        "soon": 2,
+        "routine": 1,
+    }
+
+    # Sort: higher urgency first, then earliest arrival (joined_waiting_at)
+    def sort_key(b: Booking):
+        urg = getattr(b, "urgency", "routine") or "routine"
+        weight = URGENCY_WEIGHTS.get(urg.lower(), 1)
+        arrival = b.joined_waiting_at or b.slot_start
+        if arrival.tzinfo is None:
+            arrival = arrival.replace(tzinfo=timezone.utc)
+        return (-weight, arrival)
+
+    sorted_bookings = sorted(active_bookings, key=sort_key)
 
     now = datetime.now(timezone.utc)
     queue = []
-    for b in active_bookings:
+    for b in sorted_bookings:
         wait_sec = 0
         if b.joined_waiting_at:
             tz_joined = b.joined_waiting_at if b.joined_waiting_at.tzinfo else b.joined_waiting_at.replace(tzinfo=timezone.utc)
@@ -358,6 +382,9 @@ async def get_live_doctor_queue(doctor_user_id: str) -> List[QueueItemResponse]:
                 patient_id=b.patient_id,
                 patient_name=b.patient_name,
                 status=b.status,
+                urgency=getattr(b, "urgency", "routine") or "routine",
+                urgency_reason=getattr(b, "urgency_reason", None),
+                is_red_flag=getattr(b, "is_red_flag", False) or False,
                 joined_waiting_at=b.joined_waiting_at,
                 slot_start=b.slot_start,
                 wait_seconds=wait_sec

@@ -1,0 +1,46 @@
+{
+  "notice": "MOCK EMERGENCY FACILITIES & AMBULANCE PROVIDERS - FOR DEMONSTRATION ONLY",
+  "national_emergency_numbers": [
+    {"label": "National Ambulance Service (MOCK)", "number": "108", "type": "ambulance"},
+    {"label": "Police Emergency (MOCK)", "number": "100", "type": "police"},
+    {"label": "Women Helpline (MOCK)", "number": "181", "type": "helpline"}
+  ],
+  "facilities": [
+    {
+      "id": "MOCK-HOSP-01",
+      "name": "District Area Government Hospital (MOCK)",
+      "type": "Tertiary Care / Emergency Trauma Center",
+      "address": "Opposite Collectorate Complex, Main Road, Medak",
+      "emergency_phone": "+91-40-23456789",
+      "distance_km": 4.2,
+      "ambulance_available": true,
+      "icu_beds_available": 6,
+      "blood_bank": true,
+      "open_24x7": true
+    },
+    {
+      "id": "MOCK-HOSP-02",
+      "name": "Community Health Center & Trauma Care (MOCK)",
+      "type": "Secondary Health Center",
+      "address": "Near Bus Station, Ramayampet, Telangana",
+      "emergency_phone": "+91-40-23456790",
+      "distance_km": 8.7,
+      "ambulance_available": true,
+      "icu_beds_available": 2,
+      "blood_bank": false,
+      "open_24x7": true
+    },
+    {
+      "id": "MOCK-HOSP-03",
+      "name": "Apollo Reach Rural Emergency Unit (MOCK)",
+      "type": "Private Specialty Hospital",
+      "address": "NH 44 Highway Junction, Toopran",
+      "emergency_phone": "+91-40-23456791",
+      "distance_km": 14.5,
+      "ambulance_available": true,
+      "icu_beds_available": 10,
+      "blood_bank": true,
+      "open_24x7": true
+    }
+  ]
+}

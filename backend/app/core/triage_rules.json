@@ -1,0 +1,125 @@
+{
+  "version": "1.0.0",
+  "disclaimer": "CLINICAL DECISION SUPPORT ONLY - NOT A MEDICAL DIAGNOSIS. A QUALIFIED DOCTOR MAKES THE FINAL DECISION.",
+  "urgency_levels": {
+    "emergency": {
+      "level": 1,
+      "label": "Emergency",
+      "target_response_time_minutes": 0,
+      "color": "rose",
+      "requires_immediate_escalation": true
+    },
+    "urgent": {
+      "level": 2,
+      "label": "Urgent",
+      "target_response_time_minutes": 60,
+      "color": "amber",
+      "requires_immediate_escalation": false
+    },
+    "soon": {
+      "level": 3,
+      "label": "Soon",
+      "target_response_time_minutes": 240,
+      "color": "sky",
+      "requires_immediate_escalation": false
+    },
+    "routine": {
+      "level": 4,
+      "label": "Routine",
+      "target_response_time_minutes": 1440,
+      "color": "slate",
+      "requires_immediate_escalation": false
+    }
+  },
+  "red_flag_rules": [
+    {
+      "id": "RF_CHEST_PAIN_SWEATING",
+      "name": "Chest pain with sweating / radiation",
+      "description": "Acute coronary syndrome or myocardial infarction warning signs",
+      "required_symptoms": ["chest_pain"],
+      "any_of_symptoms": ["sweating", "cold_sweat", "left_arm_pain", "jaw_pain", "shortness_of_breath"],
+      "urgency": "emergency",
+      "suggested_specialty": "Cardiology",
+      "reason": "Red-flag: chest pain with sweating or radiating discomfort"
+    },
+    {
+      "id": "RF_DIFFICULTY_BREATHING",
+      "name": "Severe difficulty breathing",
+      "description": "Acute respiratory distress, severe stridor, or cyanosis",
+      "required_symptoms": ["difficulty_breathing"],
+      "any_of_symptoms": ["cyanosis", "unable_to_speak", "stridor", "chest_indrawing", "severe_gasping"],
+      "urgency": "emergency",
+      "suggested_specialty": "Pulmonology",
+      "reason": "Red-flag: acute severe respiratory distress"
+    },
+    {
+      "id": "RF_STROKE_SIGNS",
+      "name": "Acute stroke signs (FAST criteria)",
+      "description": "Facial droop, arm weakness, or speech difficulty of sudden onset",
+      "required_symptoms": [],
+      "any_of_symptoms": ["facial_droop", "arm_weakness", "slurred_speech", "sudden_numbness", "one_sided_weakness"],
+      "urgency": "emergency",
+      "suggested_specialty": "Neurology",
+      "reason": "Red-flag: sudden stroke symptoms (FAST criteria)"
+    },
+    {
+      "id": "RF_SEVERE_BLEEDING",
+      "name": "Severe uncontrolled bleeding",
+      "description": "Arterial or profuse uncontrolled hemorrhage",
+      "required_symptoms": ["severe_bleeding"],
+      "any_of_symptoms": ["uncontrolled_hemorrhage", "arterial_spurt", "hematemesis", "rectal_hemorrhage"],
+      "urgency": "emergency",
+      "suggested_specialty": "General Medicine",
+      "reason": "Red-flag: severe uncontrolled hemorrhage"
+    },
+    {
+      "id": "RF_UNCONSCIOUSNESS",
+      "name": "Loss of consciousness / unresponsiveness",
+      "description": "Coma, syncope with prolonged loss of consciousness, or Glasgow Coma Scale drop",
+      "required_symptoms": [],
+      "any_of_symptoms": ["unconsciousness", "unresponsive", "sudden_collapse", "coma"],
+      "urgency": "emergency",
+      "suggested_specialty": "General Medicine",
+      "reason": "Red-flag: unconsciousness or patient unresponsive"
+    },
+    {
+      "id": "RF_SEIZURE",
+      "name": "Active or prolonged seizure",
+      "description": "Status epilepticus, repetitive convulsions, or ongoing active fitting",
+      "required_symptoms": [],
+      "any_of_symptoms": ["active_seizure", "continuous_convulsions", "status_epilepticus", "repeated_fits"],
+      "urgency": "emergency",
+      "suggested_specialty": "Neurology",
+      "reason": "Red-flag: active continuous seizure or convulsions"
+    },
+    {
+      "id": "RF_SEVERE_ALLERGIC_REACTION",
+      "name": "Severe allergic reaction / Anaphylaxis",
+      "description": "Swelling of tongue/throat, hives combined with wheezing or hypotension",
+      "required_symptoms": [],
+      "any_of_symptoms": ["anaphylaxis", "throat_swelling", "tongue_swelling", "hives_with_wheezing"],
+      "urgency": "emergency",
+      "suggested_specialty": "General Medicine",
+      "reason": "Red-flag: severe allergic reaction or anaphylaxis warning"
+    },
+    {
+      "id": "RF_POSSIBLE_SELF_HARM",
+      "name": "High risk of self-harm or suicidal intent",
+      "description": "Expressed active suicidal ideation or intentional self-injury",
+      "required_symptoms": [],
+      "any_of_symptoms": ["suicidal_ideation", "self_harm_risk", "intentional_poisoning", "acute_self_injury"],
+      "urgency": "emergency",
+      "suggested_specialty": "Psychiatry",
+      "reason": "Red-flag: imminent self-harm or acute crisis"
+    }
+  ],
+  "vital_sign_emergency_thresholds": {
+    "spo2_min": 88,
+    "systolic_bp_max": 200,
+    "systolic_bp_min": 70,
+    "diastolic_bp_max": 125,
+    "pulse_max": 145,
+    "pulse_min": 40,
+    "temperature_c_max": 40.5
+  }
+}

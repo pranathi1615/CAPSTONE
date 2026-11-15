@@ -19,6 +19,8 @@ import { VoiceSymptomInput } from './VoiceSymptomInput';
 import { evaluateVitalsOffline } from '../records/vitalsEvaluator';
 import { syncEngine } from '../records/syncEngine';
 import { db } from '../records/carebridgeDb';
+import { evaluateOfflineTriage } from '../triage/offlineTriage';
+import { EmergencyScreenModal } from '../triage/EmergencyScreenModal';
 
 export const AssistedVisitFlow = ({ chwUser, onVisitComplete }) => {
   const { t } = useTranslation();
@@ -59,6 +61,10 @@ export const AssistedVisitFlow = ({ chwUser, onVisitComplete }) => {
     pulse: '',
   });
   const [evaluatedVitals, setEvaluatedVitals] = useState({ is_out_of_range: false, flags: [] });
+
+  // Triage state (offline red-flags & vitals thresholds)
+  const [triageResult, setTriageResult] = useState(null);
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
 
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,6 +111,19 @@ export const AssistedVisitFlow = ({ chwUser, onVisitComplete }) => {
     const result = evaluateVitalsOffline(vitals);
     setEvaluatedVitals(result);
   }, [vitals]);
+
+  // Real-time offline triage evaluation on symptoms and vitals
+  useEffect(() => {
+    const evalRes = evaluateOfflineTriage({
+      symptoms,
+      vitals: {
+        spo2: vitals.spo2 ? Number(vitals.spo2) : undefined,
+        systolic_bp: vitals.systolic ? Number(vitals.systolic) : undefined,
+        pulse: vitals.pulse ? Number(vitals.pulse) : undefined,
+      },
+    });
+    setTriageResult(evalRes);
+  }, [symptoms, vitals]);
 
   // Handle Offline Quick Registration
   const handleQuickRegister = async (e) => {
@@ -659,6 +678,35 @@ export const AssistedVisitFlow = ({ chwUser, onVisitComplete }) => {
             </div>
           )}
 
+          {/* Red-Flag Emergency Triage Alert */}
+          {triageResult?.urgency === 'emergency' && (
+            <div data-testid="chw-emergency-detected-alert" className="p-4 bg-rose-600 text-white rounded-2xl space-y-2 shadow-lg shadow-rose-600/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-black text-sm">
+                  <AlertTriangle className="w-5 h-5 text-amber-300 animate-bounce" />
+                  <span>EMERGENCY RED-FLAG TRIGGERED</span>
+                </div>
+                <span className="text-[10px] bg-rose-700/80 px-2 py-0.5 rounded font-mono font-semibold">
+                  {triageResult.mode}
+                </span>
+              </div>
+              <p className="text-xs text-rose-100 font-medium">
+                {triageResult.reason}
+              </p>
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  data-testid="open-emergency-protocol-btn"
+                  onClick={() => setShowEmergencyModal(true)}
+                  className="px-4 py-2 bg-white text-rose-900 rounded-xl text-xs font-black hover:bg-rose-50 cursor-pointer shadow-sm transition active:scale-95 flex items-center gap-1.5"
+                >
+                  <Activity className="w-4 h-4 text-rose-600" />
+                  <span>Open Emergency Screen & Ambulance 108</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between pt-3 border-t border-slate-100">
             <button
               type="button"
@@ -722,6 +770,40 @@ export const AssistedVisitFlow = ({ chwUser, onVisitComplete }) => {
               </div>
             </div>
           </div>
+
+          {/* Triage Urgency Assessment */}
+          {triageResult && (
+            <div className={`p-4 rounded-2xl border ${
+              triageResult.urgency === 'emergency'
+                ? 'bg-rose-50 border-rose-300 text-rose-900'
+                : triageResult.urgency === 'urgent'
+                ? 'bg-amber-50 border-amber-300 text-amber-900'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-900'
+            }`}>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs uppercase tracking-wide">
+                  Clinical Triage Urgency: {triageResult.urgency}
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/70 border border-current">
+                  {triageResult.mode || 'Rules-Only (Offline)'}
+                </span>
+              </div>
+              <p className="text-xs mt-1">{triageResult.reason}</p>
+              {triageResult.urgency === 'emergency' && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    data-testid="step5-emergency-btn"
+                    onClick={() => setShowEmergencyModal(true)}
+                    className="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-md shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <AlertTriangle className="w-4 h-4 text-amber-300 animate-bounce" />
+                    <span>View Emergency Nearest Facilities & Dispatch Ambulance 108</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Delivery Mode Choice */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -814,6 +896,15 @@ export const AssistedVisitFlow = ({ chwUser, onVisitComplete }) => {
           </div>
         </div>
       )}
+
+      {/* Emergency Modal */}
+      <EmergencyScreenModal
+        isOpen={showEmergencyModal}
+        onClose={() => setShowEmergencyModal(false)}
+        triageResult={triageResult}
+        patient={selectedPatient}
+        vitals={vitals}
+      />
     </div>
   );
 };

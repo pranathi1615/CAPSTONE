@@ -21,6 +21,10 @@ from app.modules.prescriptions.models import Prescription
 from app.modules.pharmacies.models import Pharmacy
 from app.modules.sync.models import SyncReceipt
 from app.modules.assisted_visits.models import AssistedVisit
+from app.modules.triage.models import TriageEvaluation
+from app.modules.async_consults.models import AsyncConsult
+from app.modules.followups.models import FollowUp
+from app.modules.referrals.models import ReferralNote
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +60,11 @@ async def init_db() -> None:
             Prescription,
             Pharmacy,
             SyncReceipt,
-            AssistedVisit
+            AssistedVisit,
+            TriageEvaluation,
+            AsyncConsult,
+            FollowUp,
+            ReferralNote
         ]
     )
     logger.info("MongoDB and Beanie ODM initialized successfully with all indexes.")

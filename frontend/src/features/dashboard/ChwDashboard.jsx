@@ -15,12 +15,14 @@ import { BookAppointmentModal } from '../consultation/BookAppointmentModal';
 import { OfflineSyncBanner } from '../sync/OfflineSyncBanner';
 import { AssistedVisitFlow } from '../chw/AssistedVisitFlow';
 import { InactivityLockModal } from '../chw/InactivityLockModal';
+import { ChwFollowupsDueToday } from '../triage/ChwFollowupsDueToday';
+import { CalendarCheck } from 'lucide-react';
 
 export const ChwDashboard = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
-  const [activeTab, setActiveTab] = useState('assisted_visit'); // 'assisted_visit' | 'booking' | 'consent'
+  const [activeTab, setActiveTab] = useState('assisted_visit'); // 'assisted_visit' | 'followups' | 'booking' | 'consent'
 
   const [patientId, setPatientId] = useState('');
   const [purpose, setPurpose] = useState('teleconsultation');
@@ -89,7 +91,21 @@ export const ChwDashboard = () => {
               }`}
             >
               <HeartPulse className="w-3.5 h-3.5" />
-              <span>Assisted Visit (Phase 5)</span>
+              <span>Assisted Visit</span>
+            </button>
+
+            <button
+              type="button"
+              data-testid="tab-followups"
+              onClick={() => setActiveTab('followups')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'followups'
+                  ? 'bg-white text-amber-900 shadow-sm'
+                  : 'text-white/80 hover:text-white'
+              }`}
+            >
+              <CalendarCheck className="w-3.5 h-3.5" />
+              <span>Follow-ups Due Today</span>
             </button>
 
             <button
@@ -127,6 +143,13 @@ export const ChwDashboard = () => {
       {activeTab === 'assisted_visit' && (
         <section data-testid="assisted-visit-section">
           <AssistedVisitFlow chwUser={user} />
+        </section>
+      )}
+
+      {/* Follow-ups Due Today Tab (Phase 6 Requirement 7) */}
+      {activeTab === 'followups' && (
+        <section data-testid="chw-followups-section">
+          <ChwFollowupsDueToday />
         </section>
       )}
 

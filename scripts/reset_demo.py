@@ -27,6 +27,9 @@ from app.modules.consent.models import Consent
 from app.modules.identity.models import DoctorStatus, User, UserRole
 from app.modules.prescriptions.crypto import generate_ed25519_keypair
 from app.modules.pharmacies.service import seed_default_pharmacies
+from app.modules.async_consults.models import AsyncConsult, AsyncConsultStatus
+from app.modules.followups.models import FollowUp, FollowUpStatus
+from app.modules.referrals.models import ReferralNote
 from tabulate import tabulate
 
 SEEDED_ACCOUNTS = [
@@ -61,7 +64,8 @@ SEEDED_ACCOUNTS = [
         "doctor_status": DoctorStatus.APPROVED,
         "specialty": "General Medicine",
         "reg_no": "MCI-2024-9871",
-        "notes": "Approved Doctor (General Medicine) with 7 days of open slots."
+        "is_on_call": True,
+        "notes": "Approved On-Call Doctor (General Medicine) with 7 days of open slots."
     },
     {
         "role": UserRole.DOCTOR,
@@ -72,7 +76,8 @@ SEEDED_ACCOUNTS = [
         "doctor_status": DoctorStatus.APPROVED,
         "specialty": "Cardiology",
         "reg_no": "MCI-2024-5544",
-        "notes": "Approved Doctor (Cardiology) with 7 days of open slots."
+        "is_on_call": True,
+        "notes": "Approved On-Call Doctor (Cardiology) with 7 days of open slots."
     },
     {
         "role": UserRole.DOCTOR,
@@ -153,6 +158,7 @@ async def reset_demo():
                 doctor_status=acc["doctor_status"],
                 registration_number=acc["reg_no"],
                 specialty=acc["specialty"],
+                is_on_call=acc.get("is_on_call", False),
                 is_active=True
             )
             await user.insert()
@@ -166,6 +172,12 @@ async def reset_demo():
         else:
             # Update attributes to ensure consistency
             user.hashed_password = hash_password(acc["password"])
+            user.full_name = acc["name"]
+            user.doctor_status = acc["doctor_status"]
+            user.registration_number = acc["reg_no"]
+            user.specialty = acc["specialty"]
+            user.is_on_call = acc.get("is_on_call", False)
+            await user.save()
             user.full_name = acc["name"]
             user.role = acc["role"]
             user.doctor_status = acc["doctor_status"]
@@ -244,6 +256,52 @@ async def reset_demo():
                         total_slots += 1
 
     print(f"[+] Successfully generated {total_slots} fresh unbooked slots across 7 days for {len(approved_docs)} approved doctors.")
+
+    # 5. Seed Phase 6 Sample Async Consult & Follow-Up
+    anita_user = await User.find_one(User.email == "patient.anita@carebridge.local")
+    sharma_user = await User.find_one(User.email == "dr.sharma@carebridge.local")
+    lakshmi_user = await User.find_one(User.email == "chw.lakshmi@carebridge.local")
+
+    if anita_user and sharma_user:
+        await AsyncConsult.find_all().delete()
+        sample_consult = AsyncConsult(
+            patient_id=anita_user.user_id,
+            patient_name=anita_user.full_name,
+            patient_phone=anita_user.phone,
+            submitted_by=anita_user.user_id,
+            submitted_by_role="patient",
+            assigned_doctor_id=sharma_user.user_id,
+            doctor_name=sharma_user.full_name,
+            specialty="General Medicine",
+            urgency="urgent",
+            symptoms=["fever", "cough", "fatigue"],
+            symptom_text="Persistent fever and severe wet cough for three days",
+            vitals={"temperature_c": 38.8, "spo2": 96, "pulse": 98},
+            status=AsyncConsultStatus.SUBMITTED,
+            response_window_hours=24,
+            deadline_at=now + timedelta(hours=18),
+            created_at=now,
+            updated_at=now
+        )
+        await sample_consult.insert()
+        print("[+] Seeded sample Asynchronous Consultation for Dr. Sharma's inbox.")
+
+        await FollowUp.find_all().delete()
+        sample_followup = FollowUp(
+            patient_id=anita_user.user_id,
+            patient_name=anita_user.full_name,
+            patient_phone=anita_user.phone,
+            doctor_id=sharma_user.user_id,
+            doctor_name=sharma_user.full_name,
+            due_date=now,  # Due today!
+            reason="Blood pressure re-check and antihypertensive dose review",
+            status=FollowUpStatus.SCHEDULED,
+            chw_id=lakshmi_user.user_id if lakshmi_user else None,
+            created_at=now - timedelta(days=7),
+            updated_at=now
+        )
+        await sample_followup.insert()
+        print("[+] Seeded sample Follow-Up due today for CHW Lakshmi.")
 
     # 5. Print Credentials Table
     table_data = []
